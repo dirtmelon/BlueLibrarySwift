@@ -26,6 +26,7 @@ class ViewController: UIViewController {
 
 	@IBOutlet var dataTable: UITableView!
 	@IBOutlet var toolbar: UIToolbar!
+    @IBOutlet weak var scroller: HorizontalScroller!
 
     private var allAlbums = [Album]()
     private var currentAlbumData: (titles: [String], values: [String])?
@@ -44,6 +45,8 @@ class ViewController: UIViewController {
             view.addSubview(dataTable)
         }
         self.showDataForAlbum(currentAlbumIndex)
+        scroller.delegate = self
+        reloadScroller()
     }
 
 	override func didReceiveMemoryWarning() {
@@ -60,6 +63,17 @@ class ViewController: UIViewController {
             currentAlbumData = nil
         }
         dataTable!.reloadData()
+    }
+
+    func reloadScroller() {
+        allAlbums = LibraryAPI.sharedInstance.getAlbums()
+        if currentAlbumIndex < 0 {
+            currentAlbumIndex = 0
+        } else if currentAlbumIndex >= allAlbums.count {
+            currentAlbumIndex = allAlbums.count - 1
+        }
+        scroller.reload()
+        showDataForAlbum(currentAlbumIndex)
     }
 }
 
@@ -89,3 +103,32 @@ extension ViewController: UITableViewDelegate {
 
 }
 
+extension ViewController: HorizontalScrollerDelegate {
+    func numberOfViewsForHorizontalScroller(scroller: HorizontalScroller) -> (Int) {
+        return allAlbums.count
+    }
+
+    func horizontalScrollerViewAtIndex(scroller: HorizontalScroller, index: Int) -> (UIView) {
+        let album = allAlbums[index]
+        let albumView = AlbumView(frame: CGRectMake(0, 0, 100, 100), albumCover: album.coverUrl)
+        if currentAlbumIndex == index {
+            albumView.highlightAlbum(true)
+        } else {
+            albumView.highlightAlbum(false)
+        }
+        return albumView
+    }
+
+    func horizontalScrollerClickedViewAtIndex(scroller: HorizontalScroller, index: Int) {
+        //1
+        let previousAlbumView = scroller.viewAtIndex(currentAlbumIndex) as! AlbumView
+        previousAlbumView.highlightAlbum(false)
+        //2
+        currentAlbumIndex = index
+        //3
+        let albumView = scroller.viewAtIndex(index) as! AlbumView
+        albumView.highlightAlbum(true)
+        //4
+        showDataForAlbum(index)
+    }
+}

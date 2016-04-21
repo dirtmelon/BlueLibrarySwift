@@ -12,9 +12,9 @@ import UIKit
 class AlbumView: UIView {
     private var coverImage: UIImageView!
     private var indicator: UIActivityIndicatorView!
+
     init(frame: CGRect, albumCover: String) {
         super.init(frame: frame)
-        backgroundColor = UIColor.blueColor()
         coverImage = UIImageView(frame: CGRectMake(5, 5, frame.size.width - 10, frame.size.height - 10))
         addSubview(coverImage)
         indicator = UIActivityIndicatorView()
@@ -28,11 +28,17 @@ class AlbumView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+        if keyPath == "image" {
+            indicator.stopAnimating()
+        }
+    }
+    
     func highlightAlbum(didHighlightView: Bool) {
         if didHighlightView == true {
             backgroundColor = UIColor.whiteColor()
         } else {
-            backgroundColor = UIColor.blueColor()
+            backgroundColor = UIColor.blackColor()
         }
     }
 }
